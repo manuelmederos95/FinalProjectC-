@@ -4,7 +4,10 @@
 #include <errno.h>
 #include <unistd.h>   //close
 #include <arpa/inet.h>    //close
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros 
 
 #define TRUE   1
 #define FALSE  0
@@ -25,6 +28,13 @@ int main(int argc , char *argv[])
     char connectedWarning[] = "Client 0  is now connected\n";
     char disconnectedWarning[] = "Client 0  is now disconnected\n";
     char buffer[1025];  //data buffer of 1K
+    FILE * logs = fopen("logs","a+");
+
+    if (logs==NULL)
+    {
+        puts("Log file error\n");
+        exit(-1);
+    }
 
     //set of socket descriptors
     fd_set readfds;
@@ -205,7 +215,7 @@ int main(int argc , char *argv[])
                     buffer[valread] = '\0';
                     strcat(messagetosend, clientId);
                     strcat(messagetosend, buffer);
-
+                    fputs(messagetosend,logs); // write in the log file
 
 
                     for (int j = 0; j < max_clients; j++) {
@@ -214,6 +224,7 @@ int main(int argc , char *argv[])
                             send(sd , messagetosend , strlen(messagetosend) , 0 );
                         }
                     }
+
 
                 }
             }
