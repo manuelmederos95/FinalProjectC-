@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/home/mederos/Bureau/C++/ClientApp/cmake-build-debug/TCPClient.cpp
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/TCPClient.cpp
 zconf.h
 -
 TCPClient.h
-/home/mederos/Bureau/C++/ClientApp/cmake-build-debug/TCPClient.h
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/TCPClient.h
 
-/home/mederos/Bureau/C++/ClientApp/cmake-build-debug/TCPClient.h
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/TCPClient.h
 iostream
 -
 stdio.h
@@ -38,11 +38,37 @@ netdb.h
 vector
 -
 
-/home/mederos/Bureau/C++/ClientApp/main.cpp
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/clavier_non_bloquant.cpp
+thread
+-
+mutex
+-
+iostream
+-
+list
+-
+clavier_non_bloquant.h
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/clavier_non_bloquant.h
+
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/clavier_non_bloquant.h
+string
+-
+
+/home/mederos/Bureau/C++/FinalProject/ClientApp/main.cpp
 iostream
 -
 signal.h
 -
+future
+-
+pthread.h
+-
+chrono
+-
+fcntl.h
+-
 cmake-build-debug/TCPClient.h
-/home/mederos/Bureau/C++/ClientApp/cmake-build-debug/TCPClient.h
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/TCPClient.h
+cmake-build-debug/clavier_non_bloquant.h
+/home/mederos/Bureau/C++/FinalProject/ClientApp/cmake-build-debug/clavier_non_bloquant.h
 
