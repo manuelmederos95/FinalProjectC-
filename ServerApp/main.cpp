@@ -3,17 +3,22 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>   //close
-#include <arpa/inet.h>    //close
+#include <arpa/inet.h>
+#include <vector>   //close
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros 
+#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <fstream>  // For the log file
+#include <sstream>
+
 
 #define TRUE   1
 #define FALSE  0
 #define PORT 8888
 
 static void concatint(char tab[], int position, int valuetoadd);
+static void sendhistoric(int sd);
 
 int main(int argc , char *argv[])
 {
@@ -28,13 +33,8 @@ int main(int argc , char *argv[])
     char connectedWarning[] = "Client 0  is now connected\n";
     char disconnectedWarning[] = "Client 0  is now disconnected\n";
     char buffer[1025];  //data buffer of 1K
-    FILE * logs = fopen("logs","a+");
+    std::ofstream logs;
 
-    if (logs==NULL)
-    {
-        puts("Log file error\n");
-        exit(-1);
-    }
 
     //set of socket descriptors
     fd_set readfds;
@@ -212,20 +212,26 @@ int main(int argc , char *argv[])
                     //set the string terminating NULL byte on the end
                     //of the data read
                     concatint(clientId,7,i);
-                    buffer[valread] = '\0';
-                    strcat(messagetosend, clientId);
-                    strcat(messagetosend, buffer);
-                    fputs(messagetosend,logs); // write in the log file
-
-
-                    for (int j = 0; j < max_clients; j++) {
-                        if(j != i){
-                            sd = client_socket[j];
-                            send(sd , messagetosend , strlen(messagetosend) , 0 );
-                        }
+                    char hist[] = "/historic";
+                    if(strstr(buffer, hist) != NULL){
+                        sendhistoric(sd);
                     }
 
+                    else {
+                        buffer[valread] = '\0';
+                        strcat(messagetosend, clientId);
+                        strcat(messagetosend, buffer);
+                        logs.open("logs.txt", std::ofstream::out | std::ofstream::app);
+                        logs << messagetosend;// write in the log file
+                        logs.close();
 
+                        for (int j = 0; j < max_clients; j++) {
+                            if (j != i) {
+                                sd = client_socket[j];
+                                send(sd, messagetosend, strlen(messagetosend), 0);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -245,4 +251,22 @@ static void concatint(char tab[], int position, int valuetoadd){
         tab[position] = '2';
         tab[position + 1] = '0';
     }
+}
+
+static void sendhistoric(int sd){
+    std::vector<std::string> list;
+    std::ifstream logs("logs.txt");
+    //logs.open("logs;txt",std::ifstream::in);
+    std::string line;
+
+
+    while(logs && std::getline(logs, line)){
+        char *c = const_cast<char*>(line.c_str());
+        strcat(c,"\n");
+        if(line.length() == 0) continue;
+        send(sd , c , strlen(c) , 0 );
+    }
+
+
+
 }
