@@ -19,6 +19,7 @@
 
 static void concatint(char tab[], int position, int valuetoadd);
 static void sendhistoric(int sd);
+static void sendprivately(int sd[], char tab[], int from, char message[]);
 
 int main(int argc , char *argv[])
 {
@@ -198,6 +199,7 @@ int main(int argc , char *argv[])
                     close( sd );
                     client_socket[i] = 0;
                     concatint(disconnectedWarning,7,i);
+                    //Inform the others clients about the disconnection
                     for (int k = 0; k < max_clients; k++) {
                         if(k != i){
                             sd = client_socket[k];
@@ -206,18 +208,28 @@ int main(int argc , char *argv[])
                     }
                 }
 
-                    //Echo back the message that came in
+                    //Echo back the message that came in to each client
+                    // (no to the client that sent the message)
                 else
                 {
-                    //set the string terminating NULL byte on the end
-                    //of the data read
+
                     concatint(clientId,7,i);
-                    char hist[] = "/historic";
-                    if(strstr(buffer, hist) != NULL){
+                    char hist[] = "/history";
+                    char privatetoclient[] = "@Client";
+                    char privatechat[50];
+                    strncpy(privatechat,buffer,7);
+                    if(strstr(buffer, hist) != NULL){ //Call the history function
                         sendhistoric(sd);
                     }
-
+                    else if(strstr(privatetoclient, privatechat) != NULL){
+                        buffer[valread] = '\0';
+                        strcat(messagetosend, clientId);
+                        strcat(messagetosend, buffer);
+                        sendprivately(client_socket,buffer,i,messagetosend);
+                    }
                     else {
+                        //set the string terminating NULL byte on the end
+                        //of the data read
                         buffer[valread] = '\0';
                         strcat(messagetosend, clientId);
                         strcat(messagetosend, buffer);
@@ -241,11 +253,11 @@ int main(int argc , char *argv[])
 }
 
 static void concatint(char tab[], int position, int valuetoadd){
-    if(valuetoadd <= 9)
+    if(valuetoadd <= 8)
         tab[position] = (valuetoadd + 1) + '0';
-    else if ((valuetoadd > 9) &&  (valuetoadd < 19)){
+    else if ((valuetoadd > 8) &&  (valuetoadd < 19)){
         tab[position] = '1';
-        tab[position + 1] = (valuetoadd - 10) + '0';
+        tab[position + 1] = (valuetoadd + 1 - 10) + '0';
     }
     else{
         tab[position] = '2';
@@ -266,7 +278,33 @@ static void sendhistoric(int sd){
         if(line.length() == 0) continue;
         send(sd , c , strlen(c) , 0 );
     }
+}
 
+// The syntax accepted is:
+// @Client 0 Message
+// @Client 00 Message
+static void sendprivately(int sd[], char tab[], int from, char message[]){
+    int clientNum;
+    char errorMessage[] = "Syntax error\n";
+    char noClientError[] = "Client no exist\n";
+    if((tab[7] != ' ') || (tab[8] <= '0') || tab[8] > '9'){
+        send(sd[from] , errorMessage , strlen(errorMessage) , 0 );
+    }
+    else{
+        if(tab[9] == ' ') {
+            clientNum = tab[8] - '0';
+            if(sd[clientNum - 1] == 0) send(sd[from] , noClientError , strlen(noClientError) , 0 );
+            else{
+                send(sd[clientNum - 1] , message , strlen(message) , 0 );
+            }
+        }
 
-
+        else if(tab[10] >= '0' && tab[10] <= '9'){
+            clientNum = 10 + (tab[8] - '0');
+            if(sd[clientNum - 1] == 0) send(sd[from] , noClientError , strlen(noClientError) , 0 );
+            else{
+                send(sd[clientNum - 1] , message , strlen(message) , 0 );
+            }
+        }
+    }
 }
